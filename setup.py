@@ -1,0 +1,21 @@
+from distutils.core import setup
+
+setup(name='django-liberace',
+      version='0.1',
+      description='Fabulous django deployment apache mod_wsgi using fabric, pip and virtualenv',
+      author='Ryan Witt',
+      author_email='onecreativenerd@gmail.com',
+      url='http://github.com/ryanwitt/django-liberace/',
+      download_url='http://github.com/ryanwitt/django-liberace/tarball/master/',
+      package_dir={'liberace': 'liberace'},
+      packages=['liberace'],
+      classifiers=['Development Status :: 2 - Pre Alpha',
+                   'Environment :: Web Environment',
+                   'Framework :: Django',
+                   'Intended Audience :: Developers',
+                   'License :: OSI Approved :: BSD License',
+                   'Operating System :: OS Independent',
+                   'Programming Language :: Python',
+                   'Topic :: Software Development :: Libraries :: Python Modules',
+                   'Topic :: Utilities'],
+      )
