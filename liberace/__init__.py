@@ -51,6 +51,9 @@ env.use_south = False
 def _deploy_hook(env):
     pass
 
+def help():
+    print __doc__
+
 #
 # System specific settings hooks
 #
@@ -73,6 +76,7 @@ def _ubuntu_settings():
 
 def _ubuntu_install_requirements():
     sudo('apt-get -y install apache2 libapache2-mod-wsgi')
+    sudo('apt-get -y install libmysqlclient-dev')
     sudo('apt-get -y install python-dev python-setuptools python-pip')
     sudo('pip install virtualenv')
 
@@ -142,6 +146,7 @@ def detect():
 
 def deploy():
     """Deploy master/HEAD to a server."""
+    require('project_name')
     detect()
     _create_release()
     _upload_release()
@@ -376,5 +381,4 @@ try:
     ))
 except ImportError:
     pass
-
 
