@@ -57,45 +57,6 @@ def help():
 #
 # System specific settings hooks
 #
-def _dreamhost_settings():
-    env.project_deploy_dir = '/home/%(user)s/sites/%(project_name)s' % env
-    env.webserver_config_dir = env.project_deploy_dir
-    env.webserver_restart_function = run
-    env.webserver_symlink_function = run
-    env.webserver_user = '%(user)s' % env
-    #env.webserver_restart_cmd = \
-    #            'touch %s' % os.path.join(env.deploy_path, 'restart.txt')
-
-def _dreamhost_install_requirements():
-    run('pip install virtualenv')
-
-def _ubuntu_settings():
-    env.webserver_config_dir = '/etc/apache2/sites-enabled/'
-    env.webserver_restart_cmd = '/etc/init.d/apache2 restart'
-    env.webserver_user = 'www-data'
-
-def _ubuntu_install_requirements():
-    sudo('apt-get -y install apache2 libapache2-mod-wsgi')
-    sudo('apt-get -y install libmysqlclient-dev')
-    sudo('apt-get -y install python-dev python-setuptools python-pip')
-    sudo('pip install virtualenv')
-
-_debian_settings = _ubuntu_settings
-_debian_install_requirements = _ubuntu_install_requirements
-
-def _freebsd_settings():
-    env.shell = '/bin/sh -c'
-    env.webserver_config_dir = '/usr/local/etc/apache22/Includes/'
-    env.webserver_restart_cmd = '/usr/local/etc/rc.d/apache22 restart'
-    env.webserver_user = 'www'
-
-def _osx_settings():
-    env.webserver_config_dir = '/etc/apache2/other/'
-    env.webserver_restart_cmd = 'apachectl restart'
-    env.webserver_user = '_www'
-
-def _osx_install_requirements():
-    run('pip install virtualenv')
 
 def _system_config():
 
@@ -128,19 +89,30 @@ def detect():
     with settings(shell='/bin/sh -c'):
         env.uname = run('uname -a')
 
-    if 'dreamhost' in env.host_string:
-        env.system = 'dreamhost'
-    elif 'linux' in env.uname.lower():
-        with settings(warn_only=True):
-            lsb = run('lsb_release -d').lower()
-            if 'ubuntu' in lsb:
-                env.system = 'ubuntu'
-            elif 'debian' in lsb:
-                env.system = 'debian'
-    elif 'freebsd' in env.uname.lower():
-        env.system = 'freebsd'
-    elif 'darwin' in env.uname.lower():
-        env.system = 'osx'
+    # Try and identify each system
+    systems = []
+    import liberace.systems
+    for system in liberace.systems.__all__:
+        m = __import__('liberace.systems.'+system, fromlist=[system])
+        try:
+            if m.identify(env):
+                systems.append(system)
+        except AttributeError:
+            print system
+            raise
+         
+    if len(systems) > 1:
+        raise ValueError(
+            'More than one system identified! %s identifies as %s' % (
+                env.host_string,
+                ', '.join(systems),
+            )
+        )
+    elif len(systems) == 0:
+        raise ValueError('Cannot identify system for host %(host_string)s' % env)
+    else:
+        env.system = systems[0]
+
     print '--> %(host_string)s is running %(system)s' % env
     _system_config()
 
