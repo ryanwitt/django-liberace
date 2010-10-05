@@ -54,3 +54,8 @@ __all__ = (
     'freebsd',
     'dreamhost',
 )
+
+def system_specific_module(system):
+    """Returns the module for the given system."""
+    return __import__('liberace.systems.'+system, fromlist=[system])
+

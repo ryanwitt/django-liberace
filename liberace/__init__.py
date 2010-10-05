@@ -19,23 +19,50 @@ import fabric.contrib
 import time
 import os
 import tempfile
+from liberace.systems import system_specific_module, __all__ as systems
 
 #
 # Default Settings (you can override in deployment_settings.py)
 #
-env.release_file_format = '%(release)s.tar.gz'
-env.project_deploy_dir = '/usr/local/sites/%(project_name)s' 
 
+# Local paths
+env.release_file = '{release}.tar.gz'
 env.conf_dir = '_conf'
 env.data_dir = '_data'
 env.media_dir = 'media'
 env.egg_cache_dir = '_egg_cache'
 env.project_data_dir = 'data'
 env.virtualenv_dir = '_python_environment'
-
 env.django_project_dir = ''
-env.django_settings_module = 'settings'
 env.requirements_file = 'requirements.txt'
+env.webserver_config_file = '{conf_dir}/apache.conf'
+env.webserver_wsgi_file = '{conf_dir}/wsgi.py'
+
+# Remote paths
+env.deploy_path = '/usr/local/sites/{project_name}' 
+
+env.current = '{deploy_path}/current'
+env.previous = '{deploy_path}/previous'
+env.project_data_path = '{deploy_path}/{project_data_dir}'
+
+env.release_path = '{releases_path}/{release}'
+env.releases_path = '{deploy_path}/releases'
+
+env.conf_path = '{release_path}/{conf_dir}'
+env.data_path = '{release_path}/{data_dir}'
+env.media_path = '{release_path}/{media_dir}'
+env.requirements_path = '{release_path}/{requirements_file}'
+
+env.egg_cache_path = '{release_path}/{egg_cache_dir}'
+env.virtualenv_path = '{release_path}/{virtualenv_dir}'
+env.django_project_path = '{release_path}/{django_project_dir}'
+
+env.project_config_symlink = '{webserver_config_dir}/{project_name}.conf'
+env.activate = 'source {virtualenv_path}/bin/activate'
+
+# Other stuff
+env.django_settings_module = 'settings'
+env.git_branch = 'master'
 
 env.webserver_restart_function = sudo
 env.webserver_symlink_function = sudo
@@ -59,21 +86,8 @@ def help():
 #
 
 def _system_config():
-
-    # Call system specific setup function from above
-    try:
-        globals()['_%(system)s_settings' % env]()
-    except KeyError:
-        pass
-
-    env.deploy_path = env.project_deploy_dir % env
-    env.current = os.path.join(env.deploy_path, 'current')
-    env.previous = os.path.join(env.deploy_path, 'previous')
-    env.releases_path = os.path.join(env.deploy_path, 'releases')
-    env.project_data_path = os.path.join(env.deploy_path, env.project_data_dir)
-
-    env.webserver_config_file = '%(conf_dir)s/apache.conf' % env
-    env.webserver_wsgi_file = '%(conf_dir)s/wsgi.py' % env
+    require('system')
+    system_specific_module(env.system).settings(env)
 
 #
 # Actions
@@ -92,10 +106,9 @@ def detect():
     # Try and identify each system
     systems = []
     import liberace.systems
-    for system in liberace.systems.__all__:
-        m = __import__('liberace.systems.'+system, fromlist=[system])
+    for system in liberace.systems:
         try:
-            if m.identify(env):
+            if system_specific_module(system).identify(env):
                 systems.append(system)
         except AttributeError:
             print system
@@ -116,9 +129,10 @@ def detect():
     print '--> %(host_string)s is running %(system)s' % env
     _system_config()
 
-def deploy():
-    """Deploy master/HEAD to a server."""
+def deploy(branch = env.git_branch):
+    """Deploy master/HEAD to a server. Use 'fab deploy:branchname' to deploy a specific branch."""
     require('project_name')
+    env.git_branch = branch
     detect()
     _create_release()
     _upload_release()
@@ -187,22 +201,6 @@ def _create_release(name=None):
     if 'release' not in env:
         env.release = time.strftime('%Y-%m-%d.%H%M%S')
 
-    env.release_file = env.release_file_format % env
-    env.release_path = os.path.join(env.releases_path, env.release)
-
-    # Finish config, now that we know where everything is
-    env.conf_path = os.path.join(env.release_path, env.conf_dir)
-    env.data_path = os.path.join(env.release_path, env.data_dir)
-    env.media_path = os.path.join(env.release_path, env.media_dir)
-
-    env.egg_cache_path = os.path.join(env.release_path, env.egg_cache_dir)
-    env.virtualenv_path = os.path.join(env.release_path, env.virtualenv_dir)
-    env.django_project_path = os.path.join(env.release_path, env.django_project_dir)
-
-    env.project_config_symlink = os.path.join(
-        env.webserver_config_dir, '%(project_name)s.conf' % env)
-    env.activate = 'source %(virtualenv_path)s/bin/activate' % env
-
     # Export files from the index
     if env.use_index:
         release = env.release
@@ -218,7 +216,7 @@ def _create_release(name=None):
     # Otherwise do a Normal git export of master/HEAD
     else:
         local(
-            'git archive --prefix=%(release)s/ --format=tar master '
+            'git archive --prefix=%(release)s/ --format=tar %(git_branch)s '
             '%(include_paths)s | gzip > %(release_file)s' % env
         )
 
@@ -238,8 +236,10 @@ def _upload_release():
     if env.use_rsync:
         # Attempt to use the previous release to shorten upload time
         if fabric.contrib.files.exists(env.previous):
-            prev = run('readlink %(previous)s' % env)
-            prev_tgz = env.release_file_format % {'release': prev}
+            temp = env.release
+            env.release = run('readlink %(previous)s' % env)
+            prev_tgz = env.release_file
+            env.release = temp
             print prev_tgz
             if fabric.contrib.files.exists(prev_tgz):
                 run('cp %(prev_tgz)s %(new_tgz)s' % locals())
@@ -269,10 +269,7 @@ def _symlink_release():
 def _install_requirements():
 
     # Bootstrap with system specific way of installing pip and virtualenv
-    try:
-        globals()['_%(system)s_install_requirements' % env]()
-    except KeyError:
-        pass
+    system_specific_module(env.system).install_requirements(env)
 
     # Copy over previous environment if asked
     if env.virtualenv_copy_old:
@@ -339,18 +336,4 @@ def _migrate():
         run('%(activate)s; cd %(django_project_path)s; python manage.py syncdb --noinput' % env)
         if env.use_south:
             run('%(activate)s; cd %(django_project_path)s python manage.py migrate' % env)
-
-#
-# Import deployment settings
-#
-try:
-    import inspect
-    import deployment_settings
-    env.update(dict(
-        (k, v) for k,v in
-        inspect.getmembers(deployment_settings)
-        if not k.startswith('_')
-    ))
-except ImportError:
-    pass
 
