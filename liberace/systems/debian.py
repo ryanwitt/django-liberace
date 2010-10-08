@@ -1,8 +1,9 @@
 from fabric.api import *
+settings_fabric = settings
 
 def identify(env):
     if 'linux' in env.uname.lower():
-        with settings(warn_only=True):
+        with settings_fabric(warn_only=True):
             env.lsb_release = env.lsb_release or run('lsb_release -d').lower()
             if 'debian' in env.lsb_release:
                 return True
