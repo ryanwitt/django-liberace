@@ -16,7 +16,10 @@ def settings(env):
 
 def install_requirements(env):
     sudo('apt-get -y install apache2 libapache2-mod-wsgi')
-    sudo('apt-get -y install libmysqlclient-dev')
+    if '8.04' in env.lsb_release:
+        sudo('apt-get -y install libmysqlclient15-dev')
+    else:
+        sudo('apt-get -y install libmysqlclient-dev')
     sudo('apt-get -y install python-dev python-setuptools python-pip')
     sudo('pip install virtualenv')
     

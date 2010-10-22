@@ -76,6 +76,7 @@ env.use_rsync = True
 env.use_south = False
 
 env.copy_db = False
+env.copy_data = False
 
 def _deploy_hook(env):
     pass
