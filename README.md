@@ -2,16 +2,18 @@
 
 Fabulous django deployment (from git)
 
-Please report bugs at http://github.com/ryanwitt/django-liberace/issues
+Please report bugs at <http://github.com/ryanwitt/django-liberace/issues>
 
-Please ask questions on the mailing list: http://groups.google.com/group/django-liberace
+Please ask questions on the mailing list: <http://groups.google.com/group/django-liberace>
+
+![](http://github.com/ryanwitt/django-liberace/raw/master/liberace.png)
 
 ## Features
 
 Liberace is a flexible but easy to use deployment
-system, suitable for newbies to deploy simple sites, or 
-experienced programmers as a base for more complex 
-fabric deployments.
+system using fabric, pip and virtualenv. It is suitable 
+for newbies to deploy simple sites, or experienced programmers
+as a base for more complex fabric deployments.
 
 Liberace deploys django on apache mod_wsgi for now.
 
