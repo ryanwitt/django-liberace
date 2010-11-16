@@ -17,11 +17,15 @@ as a base for more complex fabric deployments.
 
 Liberace deploys django on apache mod_wsgi for now.
 
+    $ fab deploy -H youruser@production.example.com   # deploys master 
+    $ fab deploy_index -H youruser@dev1.example.com   # deploys your git index
+    $ fab deploy:branchname -H youruser@production.example.com  # deploys a branch
+
 Liberace automatically detects the platform of the 
 system being deployed on and picks appropriate install
 steps for that system.
 
-    $ fab detect -H youruser@w1.example.com
+    $ fab detect -H youruser@w1.example.com  # called during deploy and other commands
 
 Liberace supports rollback to the previous deployment:
 
@@ -63,14 +67,12 @@ Liberace is generally fabulous.
 Liberace requires my fork of fabric for the templated
 environment dictionary patch. This will be fixed in the future.
 
-    $ # first, install fabric
-    $ pip install https://github.com/ryanwitt/fabric/tarball/0.9
-    $ # or easy_install https://github.com/ryanwitt/fabric/tarball/0.9
-
-    $ # now install liberace!
+    # first, install fabric
+    $ pip install https://github.com/ryanwitt/fabric/tarball/0.9    # (or use easy_install)
+    
+    # now install liberace!
     $ pip install https://github.com/ryanwitt/fabric/django-liberace/master
-    $ # or easy_install https://github.com/ryanwitt/django-liberace/tarball/master
-
+    
 ## Project setup
 
 In your fabfile, import liberace to gain access to its default 
@@ -80,6 +82,9 @@ commands:
     from liberace import *
     env.project_name = 'example.com'                  # your site name
     env.django_project_dir = 'example_django_project' # the directory with your settings.py
+    
+    # your own fabric commands go here
+    ...
 
 You need a `_conf` directory to hold your apache and wsgi scripts. You also need
 some example scripts. Fortunately, Liberace is fabulous and has a command for that:
@@ -92,10 +97,3 @@ some example scripts. Fortunately, Liberace is fabulous and has a command for th
     Done.
 
 These files are templated, and you can customize them as you see fit.
-
-Then just use `fab` like you normally would:
-
-    $ fab deploy_index -H youruser@dev1.example.com   # deploys your index
-    $ fab deploy -H youruser@production.example.com   # deploys master 
-    $ fab deploy:branchname -H youruser@production.example.com  # deploys a branch
-
