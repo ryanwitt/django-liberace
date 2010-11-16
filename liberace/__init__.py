@@ -81,6 +81,18 @@ def _deploy_hook(env):
 def help():
     print __doc__
 
+def example_config():
+    import templates
+    if not os.path.exists(env.conf_dir):
+        os.mkdir(env.conf_dir)
+        print 'created %(conf_dir)s' % env
+    filename = os.path.join(env.conf_dir, 'apache.conf')
+    file(filename, 'w+').write(templates.apache_conf)
+    print 'created %s' % filename
+    filename = os.path.join(env.conf_dir, 'wsgi.py')
+    file(filename, 'w+').write(templates.wsgi_script)
+    print 'created %s' % filename
+
 #
 # System specific settings hooks
 #
