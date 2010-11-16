@@ -75,6 +75,9 @@ env.use_index = False
 env.use_rsync = True
 env.use_south = False
 
+env.copy_db = False
+env.copy_data = False
+
 def _deploy_hook(env):
     pass
 
@@ -200,6 +203,16 @@ def copy_key():
     run('cat %(filename)s.rsa.pub >> ~/.ssh/authorized_keys' % locals())
     run('rm %(filename)s.rsa.pub' % locals())
 
+def set_copy_db(sql_file):
+    """Copy your database to the webserver. Use fab copy_db:<path/to/db.sql> deploy:<branch> -H user@host"""
+    env.copy_db = True
+    env.sql_file = sql_file
+
+def set_copy_data(data_path):
+    """Copy your /usr/local/sites/<site>/data. use fab copy_data:<path/to/data> deploy:<branch> -H user@host"""
+    env.copy_data = True
+    env.new_data_path = data_path
+
 #
 # Subroutines
 #
@@ -282,6 +295,13 @@ def _install_requirements():
 
     # Bootstrap with system specific way of installing pip and virtualenv
     system_specific_module(env.system).install_requirements(env)
+
+    # Call user hook for this system
+    #try:
+    #globals()['install_requirements_'+env.system](env)
+    env['install_requirements_'+env.system](env)
+    #except KeyError:
+    #    pass
 
     # Copy over previous environment if asked
     if env.virtualenv_copy_old:
