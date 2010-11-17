@@ -6,7 +6,7 @@ Please report bugs at <http://github.com/ryanwitt/django-liberace/issues>
 
 Please ask questions on the mailing list: <http://groups.google.com/group/django-liberace>
 
-![](http://github.com/ryanwitt/django-liberace/raw/master/liberace.png)
+![](https://github.com/ryanwitt/django-liberace/raw/master/liberace.png)
 
 ## Features
 
