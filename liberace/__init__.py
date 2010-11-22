@@ -78,6 +78,8 @@ env.use_south = False
 env.copy_db = False
 env.copy_data = False
 
+env._deploy_hook = lambda x:x
+
 def _deploy_hook(env):
     pass
 
@@ -154,7 +156,7 @@ def deploy(branch = env.git_branch):
     _install_requirements()
     _config_webserver()
     _migrate()
-    _deploy_hook(env)
+    env._deploy_hook(env)
     _symlink_release()
     restart()
 
