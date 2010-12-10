@@ -202,6 +202,7 @@ def copy_key():
     filename = hashlib.sha1(file(os.path.expanduser(
         env.ssh_keyfile)).read()).hexdigest()
     put(env.ssh_keyfile, '%(filename)s.rsa.pub' % locals())
+    run('mkdir -p ~/.ssh')
     run('cat %(filename)s.rsa.pub >> ~/.ssh/authorized_keys' % locals())
     run('rm %(filename)s.rsa.pub' % locals())
 
