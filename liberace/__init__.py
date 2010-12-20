@@ -87,6 +87,10 @@ def help():
     print __doc__
 
 def example_config():
+    """
+    Installs the example configuration into your local directory. Don't forget
+    to commit it!
+    """
     import templates
     if not os.path.exists(env.conf_dir):
         os.mkdir(env.conf_dir)
@@ -360,9 +364,9 @@ def _config_webserver():
     run('chmod g+w %(egg_cache_path)s' % env)
 
     # Get permissions right
-    sudo('chown -R %(user)s:%(webserver_user)s %(deploy_path)s' % env)
-    run('chmod -R g+r %(deploy_path)s' % env) # webserver gets read to everything
-    run('chmod -R g+w %(project_data_path)s' % env)   # but can write only to data dir
+    sudo('chown -R %(user)s:%(webserver_user)s %(release_path)s' % env)
+    run('chmod -R g+r %(release_path)s' % env)  # webserver gets read to everything
+    run('chmod g+w %(project_data_path)s' % env)   # but can write only to data dir
     if env.webserver_can_write_media:
         with cd(env.release_path):
             run('chmod -R g+w %(media_path)s' % env)
@@ -371,5 +375,6 @@ def _migrate():
     with cd(env.release_path):
         run('%(activate)s; cd %(django_project_path)s; python manage.py syncdb --noinput' % env)
         if env.use_south:
-            run('%(activate)s; cd %(django_project_path)s python manage.py migrate' % env)
+            run('%(activate)s; cd %(django_project_path)s python manage.py migrate --noinput' % env)
+
 
