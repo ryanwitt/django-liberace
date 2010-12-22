@@ -365,8 +365,8 @@ def _config_webserver():
 
     # Get permissions right
     sudo('chown -R %(user)s:%(webserver_user)s %(release_path)s' % env)
-    run('chmod -R g+r %(release_path)s' % env)  # webserver gets read to everything
-    run('chmod g+w %(project_data_path)s' % env)   # but can write only to data dir
+    sudo('chmod -R g+r %(release_path)s' % env)  # webserver gets read to everything
+    sudo('chmod g+w %(project_data_path)s' % env)   # but can write only to data dir
     if env.webserver_can_write_media:
         with cd(env.release_path):
             run('chmod -R g+w %(media_path)s' % env)
