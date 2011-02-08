@@ -256,10 +256,10 @@ def _create_release(name=None):
 def _upload_release():
 
     sudo('mkdir -p %(deploy_path)s' % env)
+    sudo('mkdir -p %(releases_path)s' % env)
+    sudo('mkdir -p %(project_data_path)s' %env)
     sudo('chown %(user)s:%(webserver_user)s %(deploy_path)s' % env)
     sudo('chown %(user)s:%(webserver_user)s %(releases_path)s' % env)
-    run('mkdir -p %(releases_path)s' % env)
-    run('mkdir -p %(project_data_path)s' % env)
 
     new_tgz = os.path.join(env.releases_path, env.release_file)
 
