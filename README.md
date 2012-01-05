@@ -71,7 +71,7 @@ environment dictionary patch. This will be fixed in the future.
     $ pip install https://github.com/ryanwitt/fabric/tarball/0.9    # (or use easy_install)
     
     # now install liberace!
-    $ pip install https://github.com/ryanwitt/fabric/django-liberace/master
+    $ pip install https://github.com/ryanwitt/django-liberace/tarball/master
     
 ## Project setup
 
